@@ -62,7 +62,7 @@ const audioCommands = {
     volume: 0.1,
     interval: 0,
     randomChance: 1,
-    message: "SHUT THE FUCK UP THOMAS !!!!!!",
+    message: "ASGORE CORE",
   },
 };
 
