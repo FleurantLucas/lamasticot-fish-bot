@@ -50,6 +50,13 @@ const audioCommands = {
     randomChance: 1,
     message: "LE POISSON STEVE !!!!",
   }, // play once
+  "!playhero": {
+    path: "./holding-out-for-a-hero.mp3",
+    volume: 0.1,
+    interval: 0,
+    randomChance: 1,
+    message: "I NEED A HERO !",
+  }, // play once
 };
 
 const guildPlayers = new Map(); // Track per-guild connections, players, intervals
