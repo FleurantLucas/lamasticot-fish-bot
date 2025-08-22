@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const ffmpeg = require("ffmpeg-static"); // ensures FFmpeg works cross-platform
+const express = require("express");
 const {
   joinVoiceChannel,
   createAudioPlayer,
@@ -120,6 +121,25 @@ client.on("messageCreate", async (message) => {
       message.reply("⚠️ Not playing anything right now.");
     }
   }
+});
+
+// --- Express web server setup ---
+const app = express();
+
+// Root endpoint (keep-alive)
+app.get("/", (req, res) => {
+  res.send("Bot is running!");
+});
+
+// Restart endpoint
+app.get("/restart", (req, res) => {
+  res.send("♻️ Restarting bot...");
+  console.log("Received restart request, exiting process...");
+  process.exit(0); // Render will auto-restart the service
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("🌍 Web server is running.");
 });
 
 client.login(TOKEN);
