@@ -64,7 +64,12 @@ function playAudioCommand(interaction, cmd) {
     data.intervals.push(id);
   }
 
-  interaction.reply(cmd.message);
+  if (!interaction.replied) {
+    interaction.reply(cmd.message);
+  }
+  else {
+    interaction.followUp(cmd.message);
+  }
 }
 
 function stopAudio(interaction) {
