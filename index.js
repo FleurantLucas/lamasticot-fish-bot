@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const ffmpeg = require("ffmpeg-static"); // ensures FFmpeg works cross-platform
 const express = require("express");
+require("dotenv").config();
 const {
   joinVoiceChannel,
   createAudioPlayer,
