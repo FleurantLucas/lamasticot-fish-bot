@@ -26,7 +26,7 @@ module.exports = {
                 message: "THE FIGHT HAS BEGUN !",
             };
 
-            playAudioCommand(interaction, cmd);
+            await playAudioCommand(interaction, cmd);
         }
         else {
             await interaction.followUp(`and caught a **${randomFish}**!`);
