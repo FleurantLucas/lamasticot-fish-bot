@@ -56,7 +56,14 @@ const audioCommands = {
     interval: 0,
     randomChance: 1,
     message: "I NEED A HERO !",
-  }, // play once
+  },
+  "!playdrunk": {
+    path: "./driving-in-my-car.mp3",
+    volume: 0.1,
+    interval: 0,
+    randomChance: 1,
+    message: "SHUT THE FUCK UP THOMAS !!!!!!",
+  },
 };
 
 const guildPlayers = new Map(); // Track per-guild connections, players, intervals
