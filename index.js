@@ -124,23 +124,23 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-// --- Express web server setup ---
-const app = express();
+// // --- Express web server setup ---
+// const app = express();
 
-// Root endpoint (keep-alive)
-app.get("/", (req, res) => {
-  res.send("Bot is running!");
-});
+// // Root endpoint (keep-alive)
+// app.get("/", (req, res) => {
+//   res.send("Bot is running!");
+// });
 
-// Restart endpoint
-app.get("/restart", (req, res) => {
-  res.send("♻️ Restarting bot...");
-  console.log("Received restart request, exiting process...");
-  process.exit(0); // Render will auto-restart the service
-});
+// // Restart endpoint
+// app.get("/restart", (req, res) => {
+//   res.send("♻️ Restarting bot...");
+//   console.log("Received restart request, exiting process...");
+//   process.exit(0); // Render will auto-restart the service
+// });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("🌍 Web server is running.");
-});
+// app.listen(process.env.PORT || 3000, () => {
+//   console.log("🌍 Web server is running.");
+// });
 
 client.login(TOKEN);
