@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { playAudioCommand } = require("../../utils/audioPlayer");
+const { fetchWeatherAndReply } = require("./fishweather");
 const fishpool = require("../../utils/fishpool");
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -25,12 +26,13 @@ module.exports = {
 
         //const randomFish = fishes[Math.floor(Math.random() * fishes.length)];
         await interaction.reply(`🎣 You cast your line...`);
-        if (Math.random() <= 0.3) {
+        if (Math.random() <= 0.2) {
             await wait(3000);
             await interaction.followUp(`the line is tense......`);
             await wait(3000);
         }
-        if (fish.name == "ARCH-TEMPERED UTH DUNA ⭐⭐⭐") {
+        // Uth Duna
+        if (fish.id == 1) {
             await interaction.followUp(`somehow <@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!!!!!!!!!!!!!!!!!!!!!!!!!!`);
             const cmd = {
                 path: "uth-duna.mp3",
@@ -42,7 +44,8 @@ module.exports = {
 
             await playAudioCommand(interaction, cmd);
         }
-        else if (fish.name == "🦵💪🟠💪🦵 LE Poisson Steve !? ⭐") {
+        // Poisson Steve
+        else if (fish.id == 27) {
             await interaction.followUp(`<@${interaction.user.id}> caught **${fishRarity}** **${fish.name}**!`);
             const cmd = {
                 path: "stevefish.mp3",
@@ -54,7 +57,8 @@ module.exports = {
 
             await playAudioCommand(interaction, cmd);
         }
-        else if (fish.name == "🦈 Megalodon !!! ⭐⭐⭐") {
+        // Megalodon
+        else if (fish.id == 34) {
             await interaction.followUp(`<@${interaction.user.id}> caught **${fishRarity}** **${fish.name}**!`);
             const cmd = {
                 path: "megchase.mp3",
@@ -66,7 +70,8 @@ module.exports = {
 
             await playAudioCommand(interaction, cmd);
         }
-        else if (fish.name == "🦐 Reaper Leviathan (welcome on 4546b) !!! ⭐⭐⭐") {
+        // Reaper Leviathan
+        else if (fish.id == 33) {
             await interaction.followUp(`<@${interaction.user.id}> caught **${fishRarity}** **${fish.name}**!`);
             const cmd = {
                 path: "reaper.mp3",
@@ -78,7 +83,8 @@ module.exports = {
 
             await playAudioCommand(interaction, cmd);
         }
-        else if (fish.name == "🐳 Laboon (To the Grand Line 🏴‍☠️) !!! ⭐⭐⭐") {
+        // Laboon
+        else if (fish.id == 32) {
             await interaction.followUp(`<@${interaction.user.id}> caught **${fishRarity}** **${fish.name}**!`);
             const cmd = {
                 path: "onepiece.mp3",
@@ -89,6 +95,30 @@ module.exports = {
             };
 
             await playAudioCommand(interaction, cmd);
+        }
+        // Purple Fish
+        else if (fish.id == 43) {
+            await interaction.followUp(`<@${interaction.user.id}> caught **${fishRarity}** **${fish.name}**!`);
+            const cmd = {
+                path: "connection-terminated.mp3",
+                volume: 0.1,
+                interval: 0,
+                randomChance: 1,
+                message: "HE ALWAYS COMES BACK",
+            };
+
+            await playAudioCommand(interaction, cmd);
+        }
+        // Weather Fish
+        else if (fish.id == 24) {
+            await interaction.followUp(`<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!`);
+            await fetchWeatherAndReply(interaction);
+        }
+        // D&D Fish
+        else if (fish.id == 52) {
+            const rollD20 = Math.floor(Math.random() * 20) + 1;
+            await interaction.followUp(`<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!`);
+            await interaction.followUp(`The fish has spoken, it rolled a : ${rollD20}`);
         }
         else {
             await interaction.followUp(`<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!`);

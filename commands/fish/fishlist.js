@@ -10,11 +10,9 @@ module.exports = {
         let fishList = "🎣 **Fishing Pool** 🎣\n\n";
 
         for (const rarity of fishpool) {
-            fishList += `**${rarity.name} (${rarity.percent * 100}%)**\n`;
-            rarity.fish.forEach(f => {
-                fishList += `- ${f.name}\n`;
-            });
-            fishList += "\n";
+            // Join fish names with a bullet separator
+            const names = rarity.fish.map(f => f.name).join(" • ");
+            fishList += `**${rarity.name} (${rarity.percent * 100}%)**: ${names}\n\n`;
         }
 
         await interaction.reply(fishList);
