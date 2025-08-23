@@ -34,7 +34,7 @@ module.exports = {
             await interaction.followUp(`somehow <@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!!!!!!!!!!!!!!!!!!!!!!!!!!`);
             const cmd = {
                 path: "uth-duna.mp3",
-                volume: 0.2,
+                volume: 0.1,
                 interval: 0,
                 randomChance: 1,
                 message: "THE FIGHT HAS BEGUN !",

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { fishpool } = require("../../utils/fishpool"); // adjust path where you stored it
+const fishpool = require("../../utils/fishpool"); // adjust path where you stored it
 
 module.exports = {
     data: new SlashCommandBuilder()
