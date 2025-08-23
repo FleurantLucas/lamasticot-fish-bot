@@ -54,7 +54,7 @@ module.exports = {
 
         await interaction.reply({
             content: `✅ Your fish suggestion **"${suggestion}"** has been recorded! 🎣`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 };

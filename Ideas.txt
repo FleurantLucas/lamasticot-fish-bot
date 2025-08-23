@@ -1,0 +1,7 @@
+1. Competitive Fishing :
+A 1 time a day fishing that gets recorded and can display a scoreboard.
+Also have a streak.
+
+2. Event Fish
+
+3. Role notification
