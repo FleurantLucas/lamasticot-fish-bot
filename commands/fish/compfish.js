@@ -8,6 +8,7 @@ const path = require("path");
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const cooldownFile = path.join(__dirname, "../../data/dailyfish.json");
+const statsFile = path.join(__dirname, "../../data/dailystats.json");
 
 // Load JSON (create if missing)
 function loadCooldowns() {
@@ -32,8 +33,39 @@ function loadCooldowns() {
 }
 
 // Save JSON
-function saveCooldowns(data) {
-    fs.writeFileSync(cooldownFile, JSON.stringify(data, null, 2));
+function saveCooldowns(userId, userData) {
+    let current = loadCooldowns(); // reload latest file
+    current[userId] = userData;    // update only this user
+    fs.writeFileSync(cooldownFile, JSON.stringify(current, null, 2));
+}
+
+// Auquarium Load JSON (create if missing)
+function loadStats() {
+    if (!fs.existsSync(statsFile)) {
+        fs.writeFileSync(statsFile, "{}");
+        return {};
+    }
+
+    const raw = fs.readFileSync(statsFile, "utf8").trim();
+    if (!raw) {
+        fs.writeFileSync(statsFile, "{}");
+        return {};
+    }
+
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        console.error("❌ Failed to parse dailystats.json, resetting file:", e);
+        fs.writeFileSync(statsFile, "{}");
+        return {};
+    }
+}
+
+// Auquarium Save JSON
+function saveStats(userId, fishData) {
+    let current = loadStats(); // reload latest file
+    current[userId][fishData["fishId"]] = fishData["data"];    // update only this user
+    fs.writeFileSync(statsFile, JSON.stringify(current, null, 2));
 }
 
 module.exports = {
@@ -80,8 +112,7 @@ module.exports = {
 
         // Register cooldown
         userData.last = now;
-        cooldowns[userId] = userData;
-        saveCooldowns(cooldowns);
+        saveCooldowns(userId, userData);
 
         // ---- Fishing logic ----
         const rarityNumber = Math.random();

@@ -84,3 +84,7 @@ const fishpool = [
 //Latest 52
 
 module.exports = fishpool;
+
+const fishRarity = [
+    
+];

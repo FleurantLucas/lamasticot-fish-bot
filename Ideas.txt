@@ -5,3 +5,8 @@ Also have a streak.
 2. Event Fish
 
 3. Role notification
+
+4. Currency
+
+5. New fishes
+Need actual structure/database
