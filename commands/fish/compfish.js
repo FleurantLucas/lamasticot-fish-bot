@@ -82,37 +82,37 @@ module.exports = {
 
         let userData = cooldowns[userId] || { last: 0, streak: 0 };
 
-        // Check if user already played today
-        if (userData.last && (now - userData.last) < DAY) {
-            const remaining = DAY - (now - userData.last);
-            const hours = Math.floor(remaining / (1000 * 60 * 60));
-            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-            return interaction.reply({
-                content: `⏳ You already fished today! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${userData.streak}**`,
-                flags: MessageFlags.Ephemeral
-            });
+        // If first time fishing
+        if (!userData.last) {
+            userData.streak = 1;
+            userData.last = now;
+            saveCooldowns(userId, userData);
+        } else {
+            // Work out streak
+            const diffMs = now - userData.last;
+            const diffHours = diffMs / (1000 * 60 * 60);
+
+            if (diffHours < 24) {
+                // Too early to fish again
+                const remaining = DAY - diffMs;
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                return interaction.reply({
+                    content: `⏳ You already fished! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${userData.streak}**`,
+                    flags: MessageFlags.Ephemeral
+                });
+            } else if (diffHours < 48) {
+                // Within grace window → streak continues
+                userData.streak += 1;
+            } else {
+                // Missed window → reset streak
+                userData.streak = 1;
+            }
+
+            // Update last fish time
+            userData.last = now;
+            saveCooldowns(userId, userData);
         }
-
-        // Work out streak
-        const lastDate = new Date(userData.last);
-        const today = new Date(now);
-
-        const lastDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
-        const currentDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-        const diffDays = Math.floor((currentDay - lastDay) / DAY);
-
-        if (diffDays === 1) {
-            userData.streak += 1; // consecutive day
-        } else if (diffDays > 1) {
-            userData.streak = 1; // missed a day
-        } else if (userData.streak === 0) {
-            userData.streak = 1; // first time
-        }
-
-        // Register cooldown
-        userData.last = now;
-        saveCooldowns(userId, userData);
 
         // ---- Fishing logic ----
         const rarityNumber = Math.random();
@@ -133,6 +133,8 @@ module.exports = {
             await interaction.followUp(`the line is tense......`);
             await wait(3000);
         }
-        await interaction.followUp(`<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!\n🔥 Streak: **${userData.streak}**`);
+        await interaction.followUp(
+            `<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!\n🔥 Streak: **${userData.streak}**`
+        );
     },
 };
