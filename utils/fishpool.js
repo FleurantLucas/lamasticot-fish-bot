@@ -83,29 +83,29 @@ const fishpool = [
 
 //Latest 52
 
-const fishRarity = [
-    "7" = {
+const fishRarity = {
+    7: {
         name: "Divine", percent: 0.001
     },
-    "6" = {
+    6: {
         name: "Legendary", percent: 0.05
     },
-    "5" = {
+    5: {
         name: "L3g3nd@ry", percent: 0.09
     },
-    "4" = {
+    4: {
         name: "Epic", percent: 0.2
     },
-    "3" = {
+    3: {
         name: "Rare", percent: 0.4
     },
-    "2" = {
+    2: {
         name: "Uncommon", percent: 0.7
     },
-    "1" = {
+    1: {
         name: "Common", percent: 1
     },
-];
+};
 
 const fishes = {
     39: { id: 39, name: "The One Piece (didn't know it was real either) ⭐⭐⭐⭐⭐ ", rarity: 7, catchable: true },
