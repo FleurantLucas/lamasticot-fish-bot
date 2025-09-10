@@ -1,140 +1,81 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
-const { playAudioCommand } = require("../../utils/audioPlayer");
-const { fetchWeatherAndReply } = require("./fishweather");
-const fishpool = require("../../utils/fishpool");
-const fs = require("fs");
-const path = require("path");
+import { SlashCommandBuilder } from "discord.js";
+import { getRandomRarity, getRandomFish } from "../../utils/fishService.js";
+import { playAudioCommand } from "../../utils/audioPlayer.js";
+import { supabase } from "../../utils/supabase.js";
 
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const cooldownFile = path.join(__dirname, "../../data/dailyfish.json");
-const statsFile = path.join(__dirname, "../../data/dailystats.json");
+export const data = new SlashCommandBuilder()
+  .setName("dailyfish")
+  .setDescription("🎮 Official Daily Lamasticot Fishing Game!");
 
-// Load JSON (create if missing)
-function loadCooldowns() {
-    if (!fs.existsSync(cooldownFile)) {
-        fs.writeFileSync(cooldownFile, "{}");
-        return {};
-    }
-
-    const raw = fs.readFileSync(cooldownFile, "utf8").trim();
-    if (!raw) {
-        fs.writeFileSync(cooldownFile, "{}");
-        return {};
-    }
-
-    try {
-        return JSON.parse(raw);
-    } catch (e) {
-        console.error("❌ Failed to parse dailyfish.json, resetting file:", e);
-        fs.writeFileSync(cooldownFile, "{}");
-        return {};
-    }
+async function getUserStreak(userId) {
+  const { data, error } = await supabase
+    .from("user_streaks")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+  
+  if (error && error.code !== "PGRST116") throw error; // ignore not found
+  return data || { user_id: userId, streak: 0, last_fished: null };
 }
 
-// Save JSON
-function saveCooldowns(userId, userData) {
-    let current = loadCooldowns(); // reload latest file
-    current[userId] = userData;    // update only this user
-    fs.writeFileSync(cooldownFile, JSON.stringify(current, null, 2));
+async function upsertUserStreak(userId, streak, last_fished) {
+  const { error } = await supabase
+    .from("user_streaks")
+    .upsert({ user_id: userId, streak, last_fished });
+  if (error) throw error;
 }
 
-// Auquarium Load JSON (create if missing)
-function loadStats() {
-    if (!fs.existsSync(statsFile)) {
-        fs.writeFileSync(statsFile, "{}");
-        return {};
-    }
+export async function execute(interaction) {
+  const userId = interaction.user.id;
+  const now = new Date();
 
-    const raw = fs.readFileSync(statsFile, "utf8").trim();
-    if (!raw) {
-        fs.writeFileSync(statsFile, "{}");
-        return {};
-    }
+  // Fetch user streak
+  let userData = await getUserStreak(userId);
 
-    try {
-        return JSON.parse(raw);
-    } catch (e) {
-        console.error("❌ Failed to parse dailystats.json, resetting file:", e);
-        fs.writeFileSync(statsFile, "{}");
-        return {};
+  // Calculate streak
+  let streak = userData.streak || 0;
+  let lastFished = userData.last_fished ? new Date(userData.last_fished) : null;
+
+  if (lastFished) {
+    const diffMs = now - lastFished;
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 24) {
+      const remaining = 24 - diffHours;
+      const hours = Math.floor(remaining);
+      const minutes = Math.floor((remaining % 1) * 60);
+      return interaction.reply({
+        content: `⏳ You already fished! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${streak}**`,
+        ephemeral: true
+      });
+    } else if (diffHours < 48) {
+      streak += 1; // consecutive day
+    } else {
+      streak = 1; // missed day
     }
+  } else {
+    streak = 1; // first time
+  }
+
+  // Update Supabase
+  await upsertUserStreak(userId, streak, now.toISOString());
+
+  // --- Fishing logic ---
+  await interaction.reply(`🎣 You cast your line...`);
+  if (Math.random() <= 0.2) {
+    await wait(3000);
+    await interaction.followUp(`the line is tense......`);
+    await wait(3000);
+  }
+
+  const rarity = await getRandomRarity();
+  const fish = await getRandomFish(rarity.id);
+
+
+  // Default
+  await interaction.followUp(
+    `<@${interaction.user.id}> caught a **${rarity.name}** **${fish.name}**!\n🔥 Streak: **${streak}**`
+  );
 }
-
-// Auquarium Save JSON
-function saveStats(userId, fishData) {
-    let current = loadStats(); // reload latest file
-    current[userId][fishData["fishId"]] = fishData["data"];    // update only this user
-    fs.writeFileSync(statsFile, JSON.stringify(current, null, 2));
-}
-
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("dailyfish")
-        .setDescription("🎮 Official Daily Lamasticot Fishing Game !"),
-
-    async execute(interaction) {
-        const userId = interaction.user.id;
-        const cooldowns = loadCooldowns();
-
-        const now = Date.now();
-        const DAY = 24 * 60 * 60 * 1000;
-
-        let userData = cooldowns[userId] || { last: 0, streak: 0 };
-
-        // If first time fishing
-        if (!userData.last) {
-            userData.streak = 1;
-            userData.last = now;
-            saveCooldowns(userId, userData);
-        } else {
-            // Work out streak
-            const diffMs = now - userData.last;
-            const diffHours = diffMs / (1000 * 60 * 60);
-
-            if (diffHours < 24) {
-                // Too early to fish again
-                const remaining = DAY - diffMs;
-                const hours = Math.floor(remaining / (1000 * 60 * 60));
-                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                return interaction.reply({
-                    content: `⏳ You already fished! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${userData.streak}**`,
-                    flags: MessageFlags.Ephemeral
-                });
-            } else if (diffHours < 48) {
-                // Within grace window → streak continues
-                userData.streak += 1;
-            } else {
-                // Missed window → reset streak
-                userData.streak = 1;
-            }
-
-            // Update last fish time
-            userData.last = now;
-            saveCooldowns(userId, userData);
-        }
-
-        // ---- Fishing logic ----
-        const rarityNumber = Math.random();
-        let fish = { name: "🥾 Boot ?" };
-        let fishRarity = "Strange";
-
-        for (const rarity of fishpool) {
-            if (rarityNumber < rarity.percent) {
-                fish = rarity.fish[Math.floor(Math.random() * rarity.fish.length)];
-                fishRarity = rarity.name;
-                break;
-            }
-        }
-
-        await interaction.reply(`🎣 You cast your line...`);
-        if (Math.random() <= 0.2) {
-            await wait(3000);
-            await interaction.followUp(`the line is tense......`);
-            await wait(3000);
-        }
-        await interaction.followUp(
-            `<@${interaction.user.id}> caught a **${fishRarity}** **${fish.name}**!\n🔥 Streak: **${userData.streak}**`
-        );
-    },
-};
