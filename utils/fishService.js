@@ -81,6 +81,41 @@ async function upsertUserStreak(userId, streak, lastFished) {
   if (error) throw error;
 }
 
+async function recordCatch(userId, fishId) {
+  // Try to increment if exists
+  const { data, error } = await supabase
+    .from("user_fishes")
+    .upsert(
+      { user_id: userId, fish_id: fishId, caught_count: 1 },
+      { onConflict: ["user_id", "fish_id"] }
+    );
+
+  if (error) throw error;
+  return data;
+}
+
+async function getUserFishes(userId) {
+  const { data, error } = await supabase
+    .from("user_fishes")
+    .select(`
+      fish_id,
+      caught_count,
+      fishes (
+        id,
+        name,
+        fish_rarity (
+          id,
+          name,
+          percent
+        )
+      )
+    `)
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  return data;
+}
+
 export {
   getRandomRarity,
   getRandomFish,
@@ -90,4 +125,6 @@ export {
   getRarities,
   getUserStreak,
   upsertUserStreak,
+  recordCatch,
+  getUserFishes,
 };

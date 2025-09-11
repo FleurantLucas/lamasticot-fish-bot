@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getRandomRarity, getRandomFish } from "../../utils/fishService.js";
+import { getRandomRarity, getRandomFish, recordCatch } from "../../utils/fishService.js";
 import { playAudioCommand } from "../../utils/audioPlayer.js";
 import { supabase } from "../../utils/supabase.js";
 
@@ -48,7 +48,7 @@ export async function execute(interaction) {
       const minutes = Math.floor((remaining % 1) * 60);
       return interaction.reply({
         content: `⏳ You already fished! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${streak}**`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral,
       });
     } else if (diffHours < 48) {
       streak += 1; // consecutive day
@@ -73,7 +73,7 @@ export async function execute(interaction) {
   const rarity = await getRandomRarity();
   const fish = await getRandomFish(rarity.id);
 
-
+  await recordCatch(userId, fish.id);
   // Default
   await interaction.followUp(
     `<@${interaction.user.id}> caught a **${rarity.name}** **${fish.name}**!\n🔥 Streak: **${streak}**`
