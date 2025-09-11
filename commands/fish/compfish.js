@@ -48,7 +48,7 @@ export async function execute(interaction) {
       const minutes = Math.floor((remaining % 1) * 60);
       return interaction.reply({
         content: `⏳ You already fished! Try again in **${hours}h ${minutes}m**.\n🔥 Current streak: **${streak}**`,
-        flags: MessageFlags.Ephemeral,
+        ephemeral: true
       });
     } else if (diffHours < 48) {
       streak += 1; // consecutive day
